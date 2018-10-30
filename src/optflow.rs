@@ -221,7 +221,7 @@ impl Mat {
     }
 
     ///
-    pub fn cfrom_optical_flow_dtvl1(
+    pub fn from_optical_flow_dtvl1(
         from: &Mat,
         to: &Mat,
         tau: f64,
@@ -238,23 +238,43 @@ impl Mat {
     ) -> Mat {
         let out = CMat::new();
         unsafe {
-            calc_optical_flow_dtvl1(
-                from.inner,
-                to.inner,
-                out,
-                tau,
-                lambda,
-                theta,
-                nscales,
-                warps,
-                epsilon,
-                inner_iterations,
-                outer_iterations,
-                scale_step,
-                gamma,
-                median_filtering,
-                0, // false
-            );
+            if from.channels == 1 && to.channels == 1 {
+                calc_optical_flow_dtvl1(
+                    from.inner,
+                    to.inner,
+                    out,
+                    tau,
+                    lambda,
+                    theta,
+                    nscales,
+                    warps,
+                    epsilon,
+                    inner_iterations,
+                    outer_iterations,
+                    scale_step,
+                    gamma,
+                    median_filtering,
+                    0, // false
+                );
+            } else {
+                calc_optical_flow_dtvl1(
+                    from.to_grayscale().inner,
+                    to.to_grayscale().inner,
+                    out,
+                    tau,
+                    lambda,
+                    theta,
+                    nscales,
+                    warps,
+                    epsilon,
+                    inner_iterations,
+                    outer_iterations,
+                    scale_step,
+                    gamma,
+                    median_filtering,
+                    0, // false
+                );
+            }
         }
         Mat::from_raw(out)
     }
