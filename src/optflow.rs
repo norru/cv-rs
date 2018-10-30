@@ -24,6 +24,28 @@ pub enum DisPreset {
 
 #[allow(non_camel_case_types)]
 type c_bool = c_int;
+
+
+#[cfg(feature="cuda")]
+extern "C" {
+    fn cuda_calc_optical_flow_dtvl1(
+        from: *const CMat,
+        to: *const CMat,
+        out: *mut CMat,
+        tau: c_double,
+        lambda: c_double,
+        theta: c_double,
+        nscales: c_int,
+        warps: c_int,
+        epsilon: c_double,
+        iterations: c_int,
+        scaleStep: c_double,
+        gamma: c_double,
+        useInitialFlow: c_bool,
+    );
+}
+
+#[allow(non_camel_case_types)]
 extern "C" {
     fn calc_optical_flow_sf(
         from: *const CMat,
@@ -272,6 +294,60 @@ impl Mat {
                     scale_step,
                     gamma,
                     median_filtering,
+                    0, // false
+                );
+            }
+        }
+        Mat::from_raw(out)
+    }
+
+    ///
+    #[cfg(feature="cuda")]
+    pub fn from_cuda_optical_flow_dtvl1(
+        from: &Mat,
+        to: &Mat,
+        tau: f64,
+        lambda: f64,
+        theta: f64,
+        nscales: i32,
+        warps: i32,
+        epsilon: f64,
+        iterations: i32,
+        scale_step: f64,
+        gamma: f64,
+    ) -> Mat {
+        let out = CMat::new();
+        unsafe {
+            if from.channels == 1 && to.channels == 1 {
+                cuda_calc_optical_flow_dtvl1(
+                    from.inner,
+                    to.inner,
+                    out,
+                    tau,
+                    lambda,
+                    theta,
+                    nscales,
+                    warps,
+                    epsilon,
+                    iterations,
+                    scale_step,
+                    gamma,
+                    0, // false
+                );
+            } else {
+                cuda_calc_optical_flow_dtvl1(
+                    from.to_grayscale().inner,
+                    to.to_grayscale().inner,
+                    out,
+                    tau,
+                    lambda,
+                    theta,
+                    nscales,
+                    warps,
+                    epsilon,
+                    iterations,
+                    scale_step,
+                    gamma,
                     0, // false
                 );
             }

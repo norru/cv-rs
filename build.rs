@@ -89,11 +89,11 @@ mod windows {
 #[cfg(unix)]
 mod unix {
     pub fn opencv_include() -> &'static str {
-        "/usr/local/include"
+        "/usr/local/opencv.so/include"
     }
 
     pub fn opencv_link() {
-        println!("cargo:rustc-link-search=native=/usr/local/lib");
+        println!("cargo:rustc-link-search=native=/usr/local/opencv.so/lib");
         println!("cargo:rustc-link-lib=opencv_core");
         println!("cargo:rustc-link-lib=opencv_features2d");
         println!("cargo:rustc-link-lib=opencv_xfeatures2d");
@@ -108,6 +108,7 @@ mod unix {
         println!("cargo:rustc-link-lib=opencv_video");
         if cfg!(feature = "cuda") {
             println!("cargo:rustc-link-lib=opencv_cudaobjdetect");
+			println!("cargo:rustc-link-lib=opencv_cudaoptflow");
         }
     }
 }
